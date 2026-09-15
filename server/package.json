@@ -2,7 +2,19 @@
   "name": "poc-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Minimal Node/Express REST API - JWT auth, MongoDB, S3 uploads",
+  "description": "Minimal Node/Express REST API - JWT auth, MongoDB, S3 uploads (profile pictures, resumes, post attachments)",
+  "keywords": [
+    "express",
+    "nodejs",
+    "rest-api",
+    "jwt-auth",
+    "mongodb",
+    "mongoose",
+    "aws-s3",
+    "multer",
+    "ec2",
+    "poc"
+  ],
   "type": "commonjs",
   "main": "src/server.js",
   "scripts": {

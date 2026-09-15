@@ -1,6 +1,17 @@
 {
-  "name": "client",
+  "name": "poc-client",
   "version": "0.0.0",
+  "description": "Angular 21 SPA - auth, profile/resume uploads, timeline, admin panel",
+  "keywords": [
+    "angular",
+    "angular21",
+    "spa",
+    "jwt-auth",
+    "rest-api",
+    "s3-upload",
+    "admin-panel",
+    "poc"
+  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
