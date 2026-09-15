@@ -39,4 +39,4 @@ jobs:
       # server/.env is untracked (gitignored) so `git pull` never touches it.
       - name: Deploy backend
         run: |
-          ssh ubuntu@${{ secrets.EC2_HOST }} "cd ~/app && git pull --ff-only && cd server && npm install --omit=dev && pm2 restart poc-api"
+          ssh ubuntu@${{ secrets.EC2_HOST }} "cd ~/mean-social-poc && git pull --ff-only && cd server && npm install --omit=dev && pm2 restart poc-api"
