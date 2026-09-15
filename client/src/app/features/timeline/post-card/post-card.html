@@ -1,0 +1,31 @@
+<article class="card post-card">
+  <header class="post-header">
+    <div class="avatar avatar-sm">
+      @if (post.author.profilePicture?.url) {
+        <img [src]="post.author.profilePicture?.url" [alt]="post.author.name" />
+      } @else {
+        <span>{{ initials(post.author.name) }}</span>
+      }
+    </div>
+    <div>
+      <div class="post-author">{{ post.author.name }}</div>
+      <div class="post-time text-muted">{{ post.createdAt | date: 'medium' }}</div>
+    </div>
+    <div class="spacer"></div>
+    @if (canDelete) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="confirmDelete()">Delete</button>
+    }
+  </header>
+
+  @if (post.text) {
+    <p class="post-text">{{ post.text }}</p>
+  }
+
+  @if (post.attachment?.type === 'image') {
+    <img class="post-attachment-image" [src]="post.attachment?.url" [alt]="post.attachment?.originalName" />
+  } @else if (post.attachment?.type === 'document') {
+    <a class="post-attachment-doc" [href]="post.attachment?.url" target="_blank" rel="noopener">
+      📄 {{ post.attachment?.originalName }}
+    </a>
+  }
+</article>

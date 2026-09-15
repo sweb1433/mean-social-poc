@@ -1,0 +1,32 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" routerLink="/timeline">POC App</a>
+
+    @if (auth.isLoggedIn()) {
+      <nav class="links">
+        <a routerLink="/timeline" routerLinkActive="active">Timeline</a>
+        <a routerLink="/profile" routerLinkActive="active">Profile</a>
+        @if (auth.isAdmin()) {
+          <a routerLink="/admin/users" routerLinkActive="active">Admin</a>
+        }
+      </nav>
+
+      <div class="user-area">
+        <div class="avatar avatar-sm">
+          @if (auth.currentUser()?.profilePicture?.url) {
+            <img [src]="auth.currentUser()?.profilePicture?.url" [alt]="auth.currentUser()?.name" />
+          } @else {
+            <span>{{ initials(auth.currentUser()?.name ?? '') }}</span>
+          }
+        </div>
+        <span class="user-name">{{ auth.currentUser()?.name }}</span>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="logout()">Logout</button>
+      </div>
+    } @else {
+      <nav class="links">
+        <a routerLink="/login" routerLinkActive="active">Login</a>
+        <a routerLink="/signup" routerLinkActive="active">Sign up</a>
+      </nav>
+    }
+  </div>
+</header>

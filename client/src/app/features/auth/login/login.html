@@ -1,0 +1,48 @@
+<div class="auth-page">
+  <form class="card auth-card" [formGroup]="form" (ngSubmit)="submit()">
+    <h1>Welcome back</h1>
+    <p class="text-muted mt-16" style="margin-bottom: 20px;">Log in to your account</p>
+
+    @if (errorMessage()) {
+      <div class="alert alert-error">{{ errorMessage() }}</div>
+    }
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        class="input"
+        [class.invalid]="form.controls.email.invalid && form.controls.email.touched"
+        formControlName="email"
+        autocomplete="email"
+      />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <div class="field-error">Enter a valid email address</div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        class="input"
+        [class.invalid]="form.controls.password.invalid && form.controls.password.touched"
+        formControlName="password"
+        autocomplete="current-password"
+      />
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <div class="field-error">Password is required</div>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="loading()">
+      {{ loading() ? 'Logging in…' : 'Log in' }}
+    </button>
+
+    <p class="text-muted" style="text-align: center; margin-top: 16px;">
+      Don't have an account? <a routerLink="/signup">Sign up</a>
+    </p>
+  </form>
+</div>

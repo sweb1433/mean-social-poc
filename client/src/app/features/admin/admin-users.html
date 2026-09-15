@@ -1,0 +1,138 @@
+<div class="page-wide">
+  <div class="flex-row">
+    <h1>Users</h1>
+    <div class="spacer"></div>
+    <button type="button" class="btn btn-primary" (click)="toggleCreateForm()">
+      {{ showCreateForm() ? 'Cancel' : '+ New user' }}
+    </button>
+  </div>
+
+  @if (showCreateForm()) {
+    <form class="card mt-16" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+      <h3>Create user</h3>
+
+      @if (createError()) {
+        <div class="alert alert-error">{{ createError() }}</div>
+      }
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="c-name">Name</label>
+          <input id="c-name" type="text" class="input" formControlName="name" />
+        </div>
+        <div class="form-group">
+          <label for="c-email">Email</label>
+          <input id="c-email" type="email" class="input" formControlName="email" />
+        </div>
+        <div class="form-group">
+          <label for="c-password">Password</label>
+          <input id="c-password" type="password" class="input" formControlName="password" />
+        </div>
+        <div class="form-group">
+          <label for="c-role">Role</label>
+          <select id="c-role" class="input" formControlName="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="creating()">
+        {{ creating() ? 'Creating…' : 'Create user' }}
+      </button>
+    </form>
+  }
+
+  <div class="card mt-16">
+    <input
+      type="search"
+      class="input"
+      placeholder="Search by name or email…"
+      [(ngModel)]="search"
+      [ngModelOptions]="{ standalone: true }"
+      (ngModelChange)="onSearchChange()"
+    />
+  </div>
+
+  <div class="card mt-16 table-card">
+    @if (listError()) {
+      <div class="alert alert-error">{{ listError() }}</div>
+    }
+
+    @if (loading()) {
+      <p class="text-muted">Loading users…</p>
+    } @else if (users().length === 0) {
+      <div class="empty-state">No users found.</div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user._id) {
+              @if (editingUserId() === user._id) {
+                <tr class="editing-row">
+                  <td colspan="5">
+                    <form class="edit-form" [formGroup]="editForm" (ngSubmit)="submitEdit(user._id)">
+                      @if (editError()) {
+                        <div class="alert alert-error">{{ editError() }}</div>
+                      }
+                      <div class="form-row">
+                        <input type="text" class="input" formControlName="name" placeholder="Name" />
+                        <input type="email" class="input" formControlName="email" placeholder="Email" />
+                        <select class="input" formControlName="role">
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                      <div class="flex-row">
+                        <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving()">
+                          {{ saving() ? 'Saving…' : 'Save' }}
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEdit()">Cancel</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  <td>{{ user.name }}</td>
+                  <td class="text-muted">{{ user.email }}</td>
+                  <td><span class="badge" [class.badge-admin]="user.role === 'admin'" [class.badge-user]="user.role === 'user'">{{ user.role }}</span></td>
+                  <td class="text-muted">{{ user.createdAt | date: 'mediumDate' }}</td>
+                  <td class="actions-cell">
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="startEdit(user)">Edit</button>
+                    @if (!isSelf(user)) {
+                      <button
+                        type="button"
+                        class="btn btn-danger btn-sm"
+                        [disabled]="deletingId() === user._id"
+                        (click)="deleteUser(user)"
+                      >
+                        Delete
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <span class="text-muted">{{ total() }} user(s) · page {{ page() }} / {{ totalPages() }}</span>
+        <div class="spacer"></div>
+        <button type="button" class="btn btn-outline btn-sm" [disabled]="page() <= 1" (click)="prevPage()">Prev</button>
+        <button type="button" class="btn btn-outline btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next</button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,42 @@
+name: Deploy to EC2
+
+# Change this branch name if you want a different branch to trigger deploys.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Build on the GitHub-hosted runner, not on the 1GB t3.micro box.
+      - name: Build Angular
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      # Ship the built frontend straight to Nginx's web root.
+      - name: Deploy frontend
+        run: |
+          rsync -avz --delete client/dist/client/browser/ ubuntu@${{ secrets.EC2_HOST }}:/tmp/poc-app-browser/
+          ssh ubuntu@${{ secrets.EC2_HOST }} "sudo rm -rf /var/www/poc-app/browser && sudo mv /tmp/poc-app-browser /var/www/poc-app/browser"
+
+      # Pull the latest backend code and restart it under PM2.
+      # server/.env is untracked (gitignored) so `git pull` never touches it.
+      - name: Deploy backend
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} "cd ~/app && git pull --ff-only && cd server && npm install --omit=dev && pm2 restart poc-api"

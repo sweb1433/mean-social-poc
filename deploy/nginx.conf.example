@@ -1,0 +1,34 @@
+# /etc/nginx/sites-available/poc-app
+# Serves the built Angular SPA and reverse-proxies /api to the local Node process.
+# Copy this file, replace YOUR_DOMAIN_OR_IP, then:
+#   sudo ln -s /etc/nginx/sites-available/poc-app /etc/nginx/sites-enabled/
+#   sudo rm -f /etc/nginx/sites-enabled/default
+#   sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    server_name YOUR_DOMAIN_OR_IP;
+
+    root /var/www/poc-app/browser;
+    index index.html;
+
+    # Angular client-side routing - let unknown paths fall through to index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Node/Express API
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Uploads go straight to S3 from the browser's perspective (the API only
+    # returns S3 URLs) - no special client_max_body_size needed for large files
+    # here, but keep a sane cap on request bodies hitting the API itself.
+    client_max_body_size 10m;
+}

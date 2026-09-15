@@ -1,0 +1,61 @@
+<div class="page">
+  <div class="card composer">
+    <textarea
+      class="input"
+      rows="3"
+      placeholder="What's on your mind?"
+      [(ngModel)]="postText"
+      maxlength="2000"
+    ></textarea>
+
+    @if (attachmentPreviewUrl()) {
+      <div class="attachment-preview">
+        <img [src]="attachmentPreviewUrl()" alt="Attachment preview" />
+        <button type="button" class="btn btn-ghost btn-sm" (click)="clearAttachment()">Remove</button>
+      </div>
+    } @else if (attachment()) {
+      <div class="attachment-preview">
+        <span class="text-muted">📄 {{ attachment()?.name }}</span>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="clearAttachment()">Remove</button>
+      </div>
+    }
+
+    @if (attachmentError()) {
+      <div class="alert alert-error">{{ attachmentError() }}</div>
+    }
+    @if (postError()) {
+      <div class="alert alert-error">{{ postError() }}</div>
+    }
+
+    <div class="composer-actions">
+      <label class="btn btn-outline btn-sm attach-btn">
+        📎 Attach
+        <input #fileInput type="file" hidden (change)="onFileSelected($event)" accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx" />
+      </label>
+      <div class="spacer"></div>
+      <button type="button" class="btn btn-primary" [disabled]="posting()" (click)="submitPost()">
+        {{ posting() ? 'Posting…' : 'Post' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-16">
+    @if (loadingPosts()) {
+      <p class="text-muted">Loading timeline…</p>
+    } @else if (posts().length === 0) {
+      <div class="empty-state">No posts yet. Be the first to share something!</div>
+    } @else {
+      @for (post of posts(); track post._id) {
+        <app-post-card [post]="post" [canDelete]="canDelete(post)" (delete)="deletePost($event)" />
+      }
+
+      @if (hasMore) {
+        <div style="text-align: center;">
+          <button type="button" class="btn btn-outline" [disabled]="loadingMore()" (click)="loadMore()">
+            {{ loadingMore() ? 'Loading…' : 'Load more' }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
