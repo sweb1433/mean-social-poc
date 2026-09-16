@@ -56,6 +56,10 @@ export class ChatPanel {
     return this.chat.onlineUserIds().has(userId);
   }
 
+  hasUnread(userId: string): boolean {
+    return this.chat.unreadUserIds().has(userId);
+  }
+
   initials(name: string): string {
     return name
       .trim()

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
@@ -12,11 +12,14 @@ export class ChatService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private socket: Socket | null = null;
+  private audioCtx: AudioContext | null = null;
 
   readonly directory = signal<DirectoryUser[]>([]);
   readonly onlineUserIds = signal<Set<string>>(new Set());
   readonly activeUserId = signal<string | null>(null);
   readonly messages = signal<ChatMessage[]>([]);
+  readonly unreadUserIds = signal<Set<string>>(new Set());
+  readonly totalUnread = computed(() => this.unreadUserIds().size);
 
   connect(): void {
     if (this.socket) return;
@@ -39,6 +42,15 @@ export class ChatService {
       if (belongsToActiveConversation) {
         this.messages.set([...this.messages(), message]);
       }
+
+      // Only react to messages someone else sent TO me (skip the echo of my own sends).
+      const isIncomingToMe = message.to === me && message.from !== me;
+      if (isIncomingToMe) {
+        this.playNotificationSound();
+        if (!belongsToActiveConversation) {
+          this.unreadUserIds.update((set) => new Set(set).add(message.from));
+        }
+      }
     });
   }
 
@@ -48,6 +60,7 @@ export class ChatService {
     this.onlineUserIds.set(new Set());
     this.activeUserId.set(null);
     this.messages.set([]);
+    this.unreadUserIds.set(new Set());
   }
 
   loadDirectory() {
@@ -57,6 +70,12 @@ export class ChatService {
   openConversation(userId: string) {
     this.activeUserId.set(userId);
     this.messages.set([]);
+    this.unreadUserIds.update((set) => {
+      if (!set.has(userId)) return set;
+      const next = new Set(set);
+      next.delete(userId);
+      return next;
+    });
     return this.http.get<ApiResponse<{ messages: ChatMessage[] } & PagedResult>>(
       `${environment.apiUrl}/messages/${userId}?limit=50`
     );
@@ -77,5 +96,28 @@ export class ChatService {
         console.error('Message failed:', res.error);
       }
     });
+  }
+
+  // Short synthesized beep - no audio file to bundle/host. Silently no-ops if
+  // the browser blocks audio before a user gesture has happened yet.
+  private playNotificationSound(): void {
+    try {
+      this.audioCtx ??= new AudioContext();
+      const ctx = this.audioCtx;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.25);
+    } catch {
+      // Audio is a nice-to-have, never worth breaking chat over.
+    }
   }
 }

@@ -1,5 +1,8 @@
 <button type="button" class="chat-fab" (click)="toggle()" [attr.aria-label]="open() ? 'Close chat' : 'Open chat'">
   {{ open() ? '✕' : '💬' }}
+  @if (!open() && chat.totalUnread() > 0) {
+    <span class="fab-badge">{{ chat.totalUnread() }}</span>
+  }
 </button>
 
 @if (open()) {
@@ -21,7 +24,15 @@
               }
               <span class="status-dot" [class.online]="isOnline(user._id)"></span>
             </span>
-            <span>{{ user.name }}</span>
+            <span class="chat-user-info">
+              <span class="chat-user-name">{{ user.name }}</span>
+              <span class="chat-user-status" [class.online]="isOnline(user._id)">
+                {{ isOnline(user._id) ? 'Online' : 'Offline' }}
+              </span>
+            </span>
+            @if (hasUnread(user._id)) {
+              <span class="unread-dot"></span>
+            }
           </button>
         }
         @if (chat.directory().length === 0) {
@@ -31,8 +42,12 @@
     } @else {
       <div class="chat-panel-header">
         <button type="button" class="btn btn-ghost btn-sm" (click)="back()">←</button>
-        <strong>{{ activeUser()?.name }}</strong>
-        <span class="status-dot" [class.online]="isOnline(chat.activeUserId()!)" style="position: static;"></span>
+        <span class="chat-user-info">
+          <strong>{{ activeUser()?.name }}</strong>
+          <span class="chat-user-status" [class.online]="isOnline(chat.activeUserId()!)">
+            {{ isOnline(chat.activeUserId()!) ? 'Online' : 'Offline' }}
+          </span>
+        </span>
       </div>
 
       <div class="chat-messages">
