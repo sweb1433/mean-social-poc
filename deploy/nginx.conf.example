@@ -27,6 +27,19 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # Socket.IO (chat) - needs the WebSocket upgrade headers, which the /api/
+    # block above doesn't set.
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:3000/socket.io/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Uploads go straight to S3 from the browser's perspective (the API only
     # returns S3 URLs) - no special client_max_body_size needed for large files
     # here, but keep a sane cap on request bodies hitting the API itself.

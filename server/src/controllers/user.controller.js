@@ -10,6 +10,16 @@ const getMe = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { user: req.user } });
 });
 
+// Lightweight "who can I chat with" list - every logged-in user can see every
+// other user's name/picture, unlike the paginated admin user list.
+const getDirectory = asyncHandler(async (req, res) => {
+  const users = await User.find({ _id: { $ne: req.user._id } })
+    .select('name profilePicture')
+    .sort({ name: 1 });
+
+  res.json({ success: true, data: { users } });
+});
+
 const updateMe = asyncHandler(async (req, res) => {
   const { name } = req.body;
   if (name !== undefined) req.user.name = name;
@@ -168,6 +178,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 module.exports = {
   getMe,
+  getDirectory,
   updateMe,
   uploadMyProfilePicture,
   deleteMyProfilePicture,

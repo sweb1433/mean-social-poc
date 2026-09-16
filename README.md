@@ -21,6 +21,8 @@ Built to run cheaply on a single AWS free-tier EC2 instance behind Nginx.
 - Users: view/edit own profile, upload a profile picture, upload up to 3 resumes
 - Timeline: any logged-in user can post text and/or one attachment (image or
   document), see everyone's posts, delete their own posts (admins can delete any)
+- Chat: real-time 1:1 messaging between any two users (Socket.IO), online
+  presence indicator, message history persisted in MongoDB
 - Admin: list/search/paginate users, create a user, edit name/email/role,
   delete a user (cascades: their posts + all their S3 files are cleaned up)
 

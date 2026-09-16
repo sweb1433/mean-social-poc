@@ -15,6 +15,7 @@ const {
 const { paginationValidator } = require('../validators/pagination.validator');
 const {
   getMe,
+  getDirectory,
   updateMe,
   uploadMyProfilePicture,
   deleteMyProfilePicture,
@@ -35,6 +36,7 @@ router.use(requireAuth);
 // --- self-service: registered before the /:id admin routes so "me" is
 // never swallowed by the :id param matcher ---
 router.get('/me', getMe);
+router.get('/directory', getDirectory);
 router.patch('/me', updateMeValidator, validate, updateMe);
 
 router.post('/me/profile-picture', uploadProfilePicture.single('profilePicture'), uploadMyProfilePicture);

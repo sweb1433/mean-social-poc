@@ -1,2 +1,5 @@
 <app-navbar />
 <router-outlet />
+@if (auth.isLoggedIn()) {
+  <app-chat-panel />
+}

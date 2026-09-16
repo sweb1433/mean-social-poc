@@ -1,0 +1,53 @@
+<button type="button" class="chat-fab" (click)="toggle()" [attr.aria-label]="open() ? 'Close chat' : 'Open chat'">
+  {{ open() ? '✕' : '💬' }}
+</button>
+
+@if (open()) {
+  <div class="card chat-panel">
+    @if (!chat.activeUserId()) {
+      <div class="chat-panel-header">
+        <strong>Chat</strong>
+        <span class="text-muted" style="font-size: 12px;">{{ chat.onlineUserIds().size }} online</span>
+      </div>
+
+      <div class="chat-user-list">
+        @for (user of chat.directory(); track user._id) {
+          <button type="button" class="chat-user-row" (click)="selectUser(user)">
+            <span class="avatar avatar-sm">
+              @if (user.profilePicture?.url) {
+                <img [src]="user.profilePicture?.url" [alt]="user.name" />
+              } @else {
+                <span>{{ initials(user.name) }}</span>
+              }
+              <span class="status-dot" [class.online]="isOnline(user._id)"></span>
+            </span>
+            <span>{{ user.name }}</span>
+          </button>
+        }
+        @if (chat.directory().length === 0) {
+          <p class="text-muted" style="padding: 14px;">Koi aur user nahi hai abhi.</p>
+        }
+      </div>
+    } @else {
+      <div class="chat-panel-header">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="back()">←</button>
+        <strong>{{ activeUser()?.name }}</strong>
+        <span class="status-dot" [class.online]="isOnline(chat.activeUserId()!)" style="position: static;"></span>
+      </div>
+
+      <div class="chat-messages">
+        @for (m of chat.messages(); track m._id) {
+          <div class="chat-bubble" [class.mine]="m.from === auth.currentUser()?._id">
+            {{ m.text }}
+          </div>
+        }
+        <div #scrollAnchor></div>
+      </div>
+
+      <form class="chat-input-row" (ngSubmit)="send()">
+        <input class="input" [(ngModel)]="draftText" name="draftText" placeholder="Message…" autocomplete="off" />
+        <button type="submit" class="btn btn-primary btn-sm">Send</button>
+      </form>
+    }
+  </div>
+}
